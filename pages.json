@@ -1,0 +1,74 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "Course"
+			}
+		},
+		{
+			"path" : "pages/course/course",
+			"style" : 
+			{
+				"navigationBarTitleText" : "Course"
+			}
+		},
+		{
+			"path" : "pages/record/record",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/home/home",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/login/login",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		}
+	],
+	"tabBar": {
+		"list": [
+			{
+				"iconPath": "static/icon/index.jpeg",
+				"pagePath": "pages/index/index",
+				"text": "首页",
+				"selectedIconPath": "static/icon/index-select.jpeg"
+			},
+			{
+				"iconPath": "static/icon/course.jpeg",
+				"pagePath": "pages/course/course",
+				"selectedIconPath": "static/icon/course-select.jpeg",
+				"text": "课程"
+			},
+			{
+				"iconPath": "static/icon/record.jpeg",
+				"pagePath": "pages/record/record",
+				"selectedIconPath": "static/icon/record-select.jpeg",
+				"text": "记录"
+			},
+			{
+				"iconPath": "static/icon/my.jpeg",
+				"pagePath": "pages/home/home",
+				"selectedIconPath": "static/icon/my-select.jpeg",
+				"text": "我的"
+			}
+
+		]
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"uniIdRouter": {}
+}
