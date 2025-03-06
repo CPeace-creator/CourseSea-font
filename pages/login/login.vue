@@ -254,7 +254,6 @@ const handleLogin = () => {
 		uni.switchTab({
 			url:"/pages/home/home"
 		})
-		console.log(465);
 	}else{
 		uni.showModal({
 		  title: res.message,

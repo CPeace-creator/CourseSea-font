@@ -55,18 +55,19 @@
     </view>
 
     <!-- Category Tags -->
-    <scroll-view class="category-scroll" scroll-x>
-      <view class="category-tags">
-        <view
-          v-for="(tag, index) in categories"
-          :key="index"
-          :class="['category-tag', { active: selectedCategory === tag }]"
-          @click="selectedCategory = tag"
-        >
-          {{ tag }}
-        </view>
-      </view>
-    </scroll-view>
+	<scroll-view class="category-scroll" scroll-x>
+	  <view class="category-tags">
+		<view
+		  v-for="(category, index) in categories"
+		  :key="category.id"
+		  :class="['category-tag', { active: selectedCategory === category.name }]"
+		  @click="selectedCategory = category.name"
+		>
+		  <text class="icon" :class="category.icon"></text> <!-- 添加图标 -->
+		  {{ category.name }}
+		</view>
+	  </view>
+	</scroll-view>
 
     <!-- Learning Progress -->
     <view class="section-title">
@@ -107,36 +108,167 @@
       </view>
     </view>
 
-    <!-- FAB Menu -->
-    <view class="fab-container" :class="{ 'fab-active': showFabMenu }">
-      <view
-        class="fab-backdrop"
-        v-if="showFabMenu"
-        @click="showFabMenu = false"
-      ></view>
-      <view class="fab-menu" v-if="showFabMenu">
-        <view class="fab-item" @click="handleFabAction('add')">
-          <uni-icons type="plus" size="20" color="#FFFFFF" />
-          <text>快速添加</text>
+     <!-- FAB Menu -->
+      <view class="fab-container" :class="{ 'fab-active': showFabMenu }">
+        <view
+          class="fab-backdrop"
+          v-if="showFabMenu"
+          @click="showFabMenu = false"
+        ></view>
+        <view class="fab-menu" v-if="showFabMenu">
+          <view class="fab-item cursor-pointer" @click="handleFabAction('add')">
+            <view class="fab-item-inner">
+              <uni-icons type="plus" size="20" color="#FFFFFF" />
+              <text>快速添加</text>
+            </view>
+          </view>
+          <view class="fab-item cursor-pointer" @click="handleFabAction('import')">
+            <view class="fab-item-inner">
+              <uni-icons type="download" size="20" color="#FFFFFF" />
+              <text>导入课程</text>
+            </view>
+          </view>
+          <view
+            class="fab-item cursor-pointer"
+            @click="handleFabAction('reminder')"
+          >
+            <view class="fab-item-inner">
+              <uni-icons type="calendar" size="20" color="#FFFFFF" />
+              <text>设置提醒</text>
+            </view>
+          </view>
         </view>
-        <view class="fab-item" @click="handleFabAction('import')">
-          <uni-icons type="download" size="20" color="#FFFFFF" />
-          <text>导入课程</text>
-        </view>
-        <view class="fab-item" @click="handleFabAction('reminder')">
-          <uni-icons type="calendar" size="20" color="#FFFFFF" />
-          <text>设置提醒</text>
+        <view
+          class="fab-button cursor-pointer"
+          :class="{ 'fab-button-active': showFabMenu }"
+          @click="showFabMenu = !showFabMenu"
+        >
+          <uni-icons
+            :type="showFabMenu ? 'close' : 'plus'"
+            size="24"
+            color="#FFFFFF"
+          />
         </view>
       </view>
-      <view class="fab-button" @click="showFabMenu = !showFabMenu">
-        <uni-icons
-          :type="showFabMenu ? 'close' : 'plus'"
-          size="24"
-          color="#FFFFFF"
-        />
-      </view>
-    </view>
-
+	  <!-- 添加课程弹窗 -->
+	  <uni-popup ref="addCoursePopup" type="center" :mask-click="false">
+	  	    <view class="add-course-popup">
+	  	      <view class="popup-header">
+	  	        <text class="popup-title">添加课程</text>
+	  	        <view class="close-icon cursor-pointer" @click="closeAddCoursePopup">
+	  	          <uni-icons type="close" size="24" color="#666" />
+	  	        </view>
+	  	      </view>
+	  	      
+	  	      <scroll-view class="popup-content" scroll-y>
+	  	        <view class="form-item">
+	  	          <text class="form-label required">课程名称</text>
+	  	          <input
+	  	            class="form-input"
+	  	            v-model="courseForm.name"
+	  	            placeholder="请输入课程名称"
+	  	            maxlength="50"
+	  	          />
+	  	        </view>
+	  	      
+	  	        <view class="form-item">
+	  	          <text class="form-label required">课程分类</text>
+	  	          <view class="category-list">
+	  	            <view
+	  	              v-for="category in categories"
+	  	              :key="category.id"
+	  	              class="category-item cursor-pointer"
+	  	              :class="{'category-active': courseForm.category === category.id}"
+	  	              @click="courseForm.category = category.id"
+	  	            >
+	  	              <uni-icons
+	  	                :type="category.icon"
+	  	                size="16"
+	  	                :color="courseForm.category === category.id ? '#FFFFFF' : '#666666'"
+	  	              />
+	  	              <text>{{ category.name }}</text>
+	  	            </view>
+	  	          </view>
+	  	        </view>
+	  	      
+	  	        <view class="form-item">
+	  	          <text class="form-label required">课程封面</text>
+	  	          <view class="upload-cover cursor-pointer" @click="handleUploadCover">
+	  	            <template v-if="courseForm.avatar">
+	  	              <image
+	  	                :src="courseForm.avatar"
+	  	                mode="aspectFill"
+	  	                class="cover-preview"
+	  	              />
+	  	              <view class="cover-mask">
+	  	                <uni-icons type="image" size="24" color="#FFFFFF" />
+	  	                <text>更换封面</text>
+	  	              </view>
+	  	            </template>
+	  	            <template v-else>
+	  	              <view class="upload-placeholder">
+	  	                <uni-icons type="image" size="32" color="#CCCCCC" />
+	  	                <text>上传封面图</text>
+	  	                <text class="upload-tip"
+	  	                  >建议尺寸 750x422，支持jpg、png格式</text
+	  	                >
+	  	              </view>
+	  	            </template>
+	  	          </view>
+	  	        </view>
+	  	      
+	  	        <view class="form-item">
+	  	          <text class="form-label required">课程链接</text>
+	  	          <view class="link-input-wrapper">
+	  	            <input
+	  	              class="form-input"
+	  	              v-model="courseForm.link"
+	  	              placeholder="请输入课程链接"
+	  	            />
+	  	            <view class="paste-btn cursor-pointer" @click="handlePasteLink">
+	  	              <uni-icons type="paperclip" size="16" color="#0A84FF" />
+	  	              <text>粘贴</text>
+	  	            </view>
+	  	          </view>
+	  	        </view>
+	  	      
+	  	        <view class="form-item">
+	  	          <text class="form-label required">课程描述</text>
+	  	          <textarea
+	  	            class="form-textarea"
+	  	            v-model="courseForm.description"
+	  	            placeholder="请输入课程描述，建议包含课程亮点,学习目标等信息"
+	  	            maxlength="500"
+	  	          />
+	  	          <text
+	  	            class="textarea-counter"
+	  	            :class="{'counter-warning': courseForm.description.length >= 450}"
+	  	          >
+	  	            {{ courseForm.description.length }}/500
+	  	          </text>
+	  	        </view>
+	  	      </scroll-view>
+	  	      
+	  	      <view class="popup-footer">
+	  	        <button class="btn-cancel cursor-pointer" @click="closeAddCoursePopup">
+	  	          取消
+	  	        </button>
+	  	        <button
+	  	          class="btn-confirm cursor-pointer"
+	  	          :disabled="!isFormValid"
+	  	          @click="handleSubmit"
+	  	        >
+	  	          <text>确认添加</text>
+	  	          <uni-icons
+	  	            v-if="isSubmitting"
+	  	            type="spinner-cycle"
+	  	            size="16"
+	  	            color="#FFFFFF"
+	  	          />
+	  	        </button>
+	  	      </view>
+	  	    </view>
+	  	  </uni-popup>
     <!-- Reminders Panel -->
     <uni-popup ref="remindersPopup" type="bottom" @change="handlePopupChange">
       <view class="reminders-panel">
@@ -172,12 +304,13 @@ import { ref, computed } from "vue";
 
 const searchText = ref("");
 const showFilterPanel = ref(false);
-const selectedCategory = ref("全部");
+const selectedCategory = ref("前端开发");
 const activeTab = ref(0);
 const showFabMenu = ref(false);
 const showReminders = ref(false);
 const showGoals = ref(true);
-
+const addCoursePopup = ref();
+const isSubmitting = ref(false);
 const currentDate = computed(() => {
   const date = new Date();
   return date.toLocaleDateString("zh-CN", {
@@ -187,13 +320,21 @@ const currentDate = computed(() => {
   });
 });
 
+// const categories = [
+//   "全部",
+//   "前端开发",
+//   "后端开发",
+//   "运维部署",
+//   "移动开发",
+//   "AI/机器学习",
+// ];
 const categories = [
-  "全部",
-  "前端开发",
-  "后端开发",
-  "运维部署",
-  "移动开发",
-  "AI/机器学习",
+  { id: 1, name: "前端开发", icon: "code" },
+  { id: 2, name: "后端开发", icon: "paint" },
+  { id: 3, name: "运维部署", icon: "staff" },
+  { id: 4, name: "移动开发", icon: "chat" },
+  { id: 5, name: "AI/机器学习", icon: "medal" },
+  { id: 6, name: "其他", icon: "star" },
 ];
 
 const dailyGoals = ref([
@@ -238,18 +379,139 @@ const toggleGoal = (index: number) => {
   dailyGoals.value[index].completed = !dailyGoals.value[index].completed;
 };
 
+const courseForm = ref({
+  name: "",
+  categoryId: 0,
+  avatar: "",
+  link: "",
+  description: "",
+});
+
+const isFormValid = computed(() => {
+	console.log(courseForm.value.name.trim() &&
+    courseForm.value.category &&
+    courseForm.value.link.trim() &&
+    courseForm.value.description.trim());
+  return (
+    courseForm.value.name.trim() &&
+    courseForm.value.category &&
+    courseForm.value.link.trim() &&
+    courseForm.value.description.trim()
+  );
+});
+
 const handleFabAction = (action: string) => {
   showFabMenu.value = false;
-  switch (action) {
-    case "add":
-      uni.showToast({ title: "快速添加课程", icon: "none" });
-      break;
-    case "import":
-      uni.showToast({ title: "导入课程", icon: "none" });
-      break;
-    case "reminder":
-      uni.showToast({ title: "设置提醒", icon: "none" });
-      break;
+  if (action === "add") {
+    addCoursePopup.value.open();
+  } else if (action === "import") {
+    uni.showToast({ title: "导入功能开发中", icon: "none" });
+  } else if (action === "reminder") {
+    uni.showToast({ title: "提醒功能开发中", icon: "none" });
+  }
+};
+
+const closeAddCoursePopup = () => {
+  if (isSubmitting.value) return;
+
+  if (hasFormContent.value) {
+    uni.showModal({
+      title: "提示",
+      content: "当前内容尚未保存，确定要关闭吗？",
+      success: (res) => {
+        if (res.confirm) {
+          resetForm();
+          addCoursePopup.value.close();
+        }
+      },
+    });
+  } else {
+    resetForm();
+    addCoursePopup.value.close();
+  }
+};
+
+const hasFormContent = computed(() => {
+  return (
+    courseForm.value.name ||
+    courseForm.value.category ||
+    courseForm.value.avatar ||
+    courseForm.value.link ||
+    courseForm.value.description
+  );
+});
+
+const resetForm = () => {
+  Object.assign(courseForm, {
+    name: "",
+    category: 0,
+    avatar: "",
+    link: "",
+    description: "",
+  });
+};
+
+const handleUploadCover = () => {
+  uni.chooseImage({
+    count: 1,
+    sizeType: ["compressed"],
+    sourceType: ["album", "camera"],
+    success: (res) => {
+      courseForm.value.avatar = res.tempFilePaths[0];
+    },
+  });
+};
+
+const handlePasteLink = async () => {
+  try {
+    const text = await uni.getClipboardData();
+    if (text.data) {
+      courseForm.value.link = text.data;
+      uni.showToast({ title: "已粘贴", icon: "success" });
+    }
+  } catch (error) {
+    uni.showToast({ title: "粘贴失败", icon: "none" });
+  }
+};
+
+const handleSubmit = async () => {
+  if (isSubmitting.value) return;
+
+  if (!isFormValid.value) {
+    if (!courseForm.value.name.trim()) {
+      uni.showToast({ title: "请输入课程名称", icon: "none" });
+      return;
+    }
+    if (!courseForm.value.category) {
+      uni.showToast({ title: "请选择课程分类", icon: "none" });
+      return;
+    }
+    // if (!courseForm.value.avatar) {
+    //   uni.showToast({ title: "请上传课程封面", icon: "none" });
+    //   return;
+    // }
+    if (!courseForm.value.link.trim()) {
+      uni.showToast({ title: "请输入课程链接", icon: "none" });
+      return;
+    }
+    if (!courseForm.value.description.trim()) {
+      uni.showToast({ title: "请输入课程描述", icon: "none" });
+      return;
+    }
+    return;
+  }
+
+  isSubmitting.value = true;
+
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 1500)); // 模拟提交
+    uni.showToast({ title: "添加成功", icon: "success" });
+    resetForm();
+    addCoursePopup.value.close();
+  } catch (error) {
+    uni.showToast({ title: "添加失败，请重试", icon: "none" });
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
@@ -519,10 +781,18 @@ page {
   color: #666;
 }
 
+page {
+  height: 100%;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
 .fab-container {
   position: fixed;
-  right: 30rpx;
-  bottom: 140rpx;
+  right: 40rpx;
+  bottom: 160rpx;
   z-index: 100;
 }
 
@@ -534,41 +804,377 @@ page {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.4);
   z-index: 98;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+  backdrop-filter: blur(4px);
 }
 
 .fab-menu {
   position: absolute;
-  bottom: 100rpx;
+  bottom: 120rpx;
   right: 0;
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 24rpx;
   z-index: 99;
+  transform: translateY(20rpx);
+  opacity: 0;
+  animation: slideUp 0.3s forwards;
 }
 
 .fab-item {
+  transform: translateX(20rpx);
+  opacity: 0;
+  animation: slideIn 0.3s forwards;
+}
+
+.fab-item:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.fab-item:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.fab-item:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.fab-item-inner {
   display: flex;
   align-items: center;
   gap: 16rpx;
-  background-color: #007aff;
-  padding: 16rpx 24rpx;
-  border-radius: 30rpx;
+  background: linear-gradient(135deg, #0a84ff, #0055d6);
+  padding: 20rpx 32rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 4rpx 12rpx rgba(10, 132, 255, 0.3);
+  transition: all 0.2s;
+}
+
+.fab-item-inner:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 6rpx rgba(10, 132, 255, 0.3);
 }
 
 .fab-item text {
   color: #ffffff;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .fab-button {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50rpx;
-  background-color: #007aff;
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 55rpx;
+  background: linear-gradient(135deg, #0a84ff, #0055d6);
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 122, 255, 0.3);
+  box-shadow: 0 6rpx 16rpx rgba(10, 132, 255, 0.4);
+  transition: all 0.3s;
+}
+
+.fab-button:active {
+  transform: scale(0.95);
+}
+
+.fab-button-active {
+  transform: rotate(45deg);
+  background: linear-gradient(135deg, #ff3b30, #ff2d55);
+  box-shadow: 0 6rpx 16rpx rgba(255, 59, 48, 0.4);
+}
+
+.add-course-popup {
+  width: 650rpx;
+  background-color: #ffffff;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.popup-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.close-icon {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 24rpx;
+  transition: background-color 0.3s;
+}
+
+.close-icon:active {
+  background-color: #f5f5f5;
+}
+
+.popup-content {
+  max-height: 800rpx;
+  padding: 32rpx;
+}
+
+.form-item {
+  margin-bottom: 32rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  color: #333333;
+  margin-bottom: 16rpx;
+  font-weight: 500;
+}
+
+.required::after {
+  content: "*";
+  color: #ff3b30;
+  margin-left: 8rpx;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  background-color: #f5f5f5;
+  border-radius: 12rpx;
+  padding: 0 24rpx;
+  font-size: 14px;
+  color: #333333;
+  transition: all 0.3s;
+}
+
+.form-input:focus {
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.1);
+}
+
+.category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 24rpx;
+  background-color: #f5f5f5;
+  border-radius: 8rpx;
+  font-size: 14px;
+  color: #666666;
+  transition: all 0.3s;
+}
+
+.category-item:active {
+  opacity: 0.8;
+}
+
+.category-active {
+  background-color: #0a84ff;
+  color: #ffffff;
+}
+
+.upload-cover {
+  width: 100%;
+  height: 300rpx;
+  background-color: #f5f5f5;
+  border-radius: 12rpx;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.upload-cover:active {
+  opacity: 0.8;
+}
+
+.upload-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.upload-placeholder text {
+  font-size: 14px;
+  color: #999999;
+}
+
+.upload-tip {
+  font-size: 12px !important;
+  color: #cccccc !important;
+}
+
+.cover-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16rpx;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.upload-cover:hover .cover-mask {
+  opacity: 1;
+}
+
+.cover-mask text {
+  color: #ffffff;
+}
+
+.link-input-wrapper {
+  position: relative;
+}
+
+.paste-btn {
+  position: absolute;
+  right: 24rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 12rpx 20rpx;
+  border-radius: 28rpx;
+  background-color: rgba(10, 132, 255, 0.1);
+  transition: all 0.3s;
+}
+
+.paste-btn:active {
+  opacity: 0.8;
+}
+
+.paste-btn text {
+  font-size: 12px;
+  color: #0a84ff;
+}
+
+.form-textarea {
+  width: 100%;
+  height: 200rpx;
+  background-color: #f5f5f5;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  font-size: 14px;
+  color: #333333;
+  transition: all 0.3s;
+}
+
+.form-textarea:focus {
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.1);
+}
+
+.textarea-counter {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: #999999;
+  margin-top: 8rpx;
+}
+
+.counter-warning {
+  color: #ff3b30;
+}
+
+.popup-footer {
+  display: flex;
+  padding: 32rpx;
+  gap: 20rpx;
+  border-top: 1px solid #eeeeee;
+}
+
+.btn-cancel,
+.btn-confirm {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8rpx;
+  transition: all 0.3s;
+}
+
+.btn-cancel {
+  background-color: #f5f5f5;
+  color: #666666;
+}
+
+.btn-cancel:active {
+  background-color: #eeeeee;
+}
+
+.btn-confirm {
+  background: linear-gradient(135deg, #0a84ff, #0055d6);
+  color: #ffffff;
+}
+
+.btn-confirm:active {
+  opacity: 0.9;
+}
+
+.btn-confirm:disabled {
+  background: linear-gradient(135deg, #cccccc, #999999);
+  opacity: 0.8;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20rpx);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(20rpx);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .reminders-panel {
