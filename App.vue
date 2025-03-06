@@ -1,6 +1,10 @@
 <script>
+import {list} from './utils/cateogory.js'
 	export default {
 		onLaunch: function() {
+			list().then((res)=>{
+				uni.setStorageSync("categories",res.data)
+			})
 			const token = uni.getStorageSync('token');
 			    if (!token) {
 			      uni.reLaunch({

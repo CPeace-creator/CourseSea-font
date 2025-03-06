@@ -300,8 +300,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
-
+import { ref, computed,onMounted} from "vue";
+import {
+    onLoad,
+    onShow,
+	onLaunch
+  } from "@dcloudio/uni-app";
 const searchText = ref("");
 const showFilterPanel = ref(false);
 const selectedCategory = ref("前端开发");
@@ -319,23 +323,7 @@ const currentDate = computed(() => {
     day: "numeric",
   });
 });
-
-// const categories = [
-//   "全部",
-//   "前端开发",
-//   "后端开发",
-//   "运维部署",
-//   "移动开发",
-//   "AI/机器学习",
-// ];
-const categories = [
-  { id: 1, name: "前端开发", icon: "code" },
-  { id: 2, name: "后端开发", icon: "paint" },
-  { id: 3, name: "运维部署", icon: "staff" },
-  { id: 4, name: "移动开发", icon: "chat" },
-  { id: 5, name: "AI/机器学习", icon: "medal" },
-  { id: 6, name: "其他", icon: "star" },
-];
+const categories = uni.getStorageSync("categories")
 
 const dailyGoals = ref([
   { text: "完成 React Hooks 章节", time: "10:00", completed: false },
