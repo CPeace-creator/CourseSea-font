@@ -109,166 +109,220 @@
     </view>
 
      <!-- FAB Menu -->
-      <view class="fab-container" :class="{ 'fab-active': showFabMenu }">
-        <view
-          class="fab-backdrop"
-          v-if="showFabMenu"
-          @click="showFabMenu = false"
-        ></view>
-        <view class="fab-menu" v-if="showFabMenu">
-          <view class="fab-item cursor-pointer" @click="handleFabAction('add')">
-            <view class="fab-item-inner">
-              <uni-icons type="plus" size="20" color="#FFFFFF" />
-              <text>快速添加</text>
-            </view>
-          </view>
-          <view class="fab-item cursor-pointer" @click="handleFabAction('import')">
-            <view class="fab-item-inner">
-              <uni-icons type="download" size="20" color="#FFFFFF" />
-              <text>导入课程</text>
-            </view>
-          </view>
-          <view
-            class="fab-item cursor-pointer"
-            @click="handleFabAction('reminder')"
-          >
-            <view class="fab-item-inner">
-              <uni-icons type="calendar" size="20" color="#FFFFFF" />
-              <text>设置提醒</text>
-            </view>
-          </view>
-        </view>
-        <view
-          class="fab-button cursor-pointer"
-          :class="{ 'fab-button-active': showFabMenu }"
-          @click="showFabMenu = !showFabMenu"
-        >
-          <uni-icons
-            :type="showFabMenu ? 'close' : 'plus'"
-            size="24"
-            color="#FFFFFF"
-          />
-        </view>
-      </view>
-	  <!-- 添加课程弹窗 -->
-	  <uni-popup ref="addCoursePopup" type="center" :mask-click="false">
-	  	    <view class="add-course-popup">
-	  	      <view class="popup-header">
-	  	        <text class="popup-title">添加课程</text>
-	  	        <view class="close-icon cursor-pointer" @click="closeAddCoursePopup">
-	  	          <uni-icons type="close" size="24" color="#666" />
-	  	        </view>
-	  	      </view>
-	  	      
-	  	      <scroll-view class="popup-content" scroll-y>
-	  	        <view class="form-item">
-	  	          <text class="form-label required">课程名称</text>
-	  	          <input
-	  	            class="form-input"
-	  	            v-model="courseForm.name"
-	  	            placeholder="请输入课程名称"
-	  	            maxlength="50"
-	  	          />
-	  	        </view>
-	  	      
-	  	        <view class="form-item">
-	  	          <text class="form-label required">课程分类</text>
-	  	          <view class="category-list">
-	  	            <view
-	  	              v-for="category in categories"
-	  	              :key="category.id"
-	  	              class="category-item cursor-pointer"
-	  	              :class="{'category-active': courseForm.category === category.id}"
-	  	              @click="courseForm.category = category.id"
-	  	            >
-	  	              <uni-icons
-	  	                :type="category.icon"
-	  	                size="16"
-	  	                :color="courseForm.category === category.id ? '#FFFFFF' : '#666666'"
-	  	              />
-	  	              <text>{{ category.name }}</text>
-	  	            </view>
-	  	          </view>
-	  	        </view>
-	  	      
-	  	        <view class="form-item">
-	  	          <text class="form-label required">课程封面</text>
-	  	          <view class="upload-cover cursor-pointer" @click="handleUploadCover">
-	  	            <template v-if="courseForm.avatar">
-	  	              <image
-	  	                :src="courseForm.avatar"
-	  	                mode="aspectFill"
-	  	                class="cover-preview"
-	  	              />
-	  	              <view class="cover-mask">
-	  	                <uni-icons type="image" size="24" color="#FFFFFF" />
-	  	                <text>更换封面</text>
-	  	              </view>
-	  	            </template>
-	  	            <template v-else>
-	  	              <view class="upload-placeholder">
-	  	                <uni-icons type="image" size="32" color="#CCCCCC" />
-	  	                <text>上传封面图</text>
-	  	                <text class="upload-tip"
-	  	                  >建议尺寸 750x422，支持jpg、png格式</text
-	  	                >
-	  	              </view>
-	  	            </template>
-	  	          </view>
-	  	        </view>
-	  	      
-	  	        <view class="form-item">
-	  	          <text class="form-label required">课程链接</text>
-	  	          <view class="link-input-wrapper">
-	  	            <input
-	  	              class="form-input"
-	  	              v-model="courseForm.link"
-	  	              placeholder="请输入课程链接"
-	  	            />
-	  	            <view class="paste-btn cursor-pointer" @click="handlePasteLink">
-	  	              <uni-icons type="paperclip" size="16" color="#0A84FF" />
-	  	              <text>粘贴</text>
-	  	            </view>
-	  	          </view>
-	  	        </view>
-	  	      
-	  	        <view class="form-item">
-	  	          <text class="form-label required">课程描述</text>
-	  	          <textarea
-	  	            class="form-textarea"
-	  	            v-model="courseForm.description"
-	  	            placeholder="请输入课程描述，建议包含课程亮点,学习目标等信息"
-	  	            maxlength="500"
-	  	          />
-	  	          <text
-	  	            class="textarea-counter"
-	  	            :class="{'counter-warning': courseForm.description.length >= 450}"
-	  	          >
-	  	            {{ courseForm.description.length }}/500
-	  	          </text>
-	  	        </view>
-	  	      </scroll-view>
-	  	      
-	  	      <view class="popup-footer">
-	  	        <button class="btn-cancel cursor-pointer" @click="closeAddCoursePopup">
-	  	          取消
-	  	        </button>
-	  	        <button
-	  	          class="btn-confirm cursor-pointer"
-	  	          :disabled="!isFormValid"
-	  	          @click="handleSubmit"
-	  	        >
-	  	          <text>确认添加</text>
-	  	          <uni-icons
-	  	            v-if="isSubmitting"
-	  	            type="spinner-cycle"
-	  	            size="16"
-	  	            color="#FFFFFF"
-	  	          />
-	  	        </button>
-	  	      </view>
-	  	    </view>
-	  	  </uni-popup>
+       <view class="fab-container" :class="{ 'fab-active': showFabMenu }">
+         <view
+           class="fab-backdrop"
+           v-if="showFabMenu"
+           @click="showFabMenu = false"
+         ></view>
+         <view class="fab-menu" v-if="showFabMenu">
+           <view class="fab-item cursor-pointer" @click="handleFabAction('add')">
+             <view class="fab-item-inner">
+               <uni-icons type="plus" size="20" color="#FFFFFF" />
+               <text>快速添加</text>
+             </view>
+           </view>
+           <view class="fab-item cursor-pointer" @click="handleFabAction('import')">
+             <view class="fab-item-inner">
+               <uni-icons type="download" size="20" color="#FFFFFF" />
+               <text>导入课程</text>
+             </view>
+           </view>
+           <view
+             class="fab-item cursor-pointer"
+             @click="handleFabAction('reminder')"
+           >
+             <view class="fab-item-inner">
+               <uni-icons type="calendar" size="20" color="#FFFFFF" />
+               <text>设置提醒</text>
+             </view>
+           </view>
+         </view>
+         <view
+           class="fab-button cursor-pointer"
+           :class="{ 'fab-button-active': showFabMenu }"
+           @click="showFabMenu = !showFabMenu"
+         >
+           <uni-icons
+             :type="showFabMenu ? 'close' : 'plus'"
+             size="24"
+             color="#FFFFFF"
+           />
+         </view>
+       </view>
+     
+       <!-- 快速添加弹窗 -->
+       <uni-popup ref="quickAddPopup" type="center" :mask-click="false">
+         <view class="quick-add-popup">
+           <view class="popup-header">
+             <text class="popup-title">快速添加</text>
+             <view class="close-icon cursor-pointer" @click="closeQuickAddPopup">
+               <uni-icons type="close" size="24" color="#666" />
+             </view>
+           </view>
+     
+           <view class="popup-content">
+             <view class="quick-add-tip">
+               <uni-icons type="info" size="16" color="#0A84FF" />
+               <text>粘贴课程链接，快速识别课程信息</text>
+             </view>
+     
+             <view class="link-input-wrapper">
+               <input
+                 class="form-input"
+                 v-model="quickAddLink"
+                 placeholder="请输入或粘贴课程链接"
+                 :disabled="isAnalyzing"
+               />
+               <view
+                 class="paste-btn cursor-pointer"
+                 @click="handleQuickPaste"
+                 v-if="!isAnalyzing"
+               >
+                 <uni-icons type="paperclip" size="16" color="#0A84FF" />
+                 <text>粘贴</text>
+               </view>
+               <view class="analyzing-status" v-else>
+                 <uni-icons type="spinner-cycle" size="16" color="#0A84FF" />
+                 <text>分析中</text>
+               </view>
+             </view>
+           </view>
+     
+           <view class="popup-footer">
+             <button class="btn-cancel cursor-pointer" @click="closeQuickAddPopup">
+               取消
+             </button>
+             <button
+               class="btn-confirm cursor-pointer"
+               :disabled="!quickAddLink.trim() || isAnalyzing"
+               @click="handleQuickAdd"
+             >
+               <text>开始分析</text>
+             </button>
+           </view>
+         </view>
+       </uni-popup>
+     
+       <!-- 添加课程弹窗 -->
+       <uni-popup ref="addCoursePopup" type="center" :mask-click="false">
+         <view class="add-course-popup">
+           <view class="popup-header">
+             <text class="popup-title">添加课程</text>
+             <view class="close-icon cursor-pointer" @click="closeAddCoursePopup">
+               <uni-icons type="close" size="24" color="#666" />
+             </view>
+           </view>
+     
+           <scroll-view class="popup-content" scroll-y>
+             <view class="form-item">
+               <text class="form-label required">课程名称</text>
+               <input
+                 class="form-input"
+                 v-model="courseForm.name"
+                 placeholder="请输入课程名称"
+                 maxlength="50"
+               />
+             </view>
+     
+             <view class="form-item">
+               <text class="form-label required">课程分类</text>
+               <view class="category-list">
+                 <view
+                   v-for="category in categories"
+                   :key="category.id"
+                   class="category-item cursor-pointer"
+                   :class="{'category-active': courseForm.category === category.id}"
+                   @click="courseForm.category = category.id"
+                 >
+                   <uni-icons
+                     :type="category.icon"
+                     size="16"
+                     :color="courseForm.category === category.id ? '#FFFFFF' : '#666666'"
+                   />
+                   <text>{{ category.name }}</text>
+                 </view>
+               </view>
+             </view>
+     
+             <view class="form-item">
+               <text class="form-label required">课程封面</text>
+               <view class="upload-cover cursor-pointer" @click="handleUploadCover">
+                 <template v-if="courseForm.coverUrl">
+                   <image
+                     :src="courseForm.coverUrl"
+                     mode="aspectFill"
+                     class="cover-preview"
+                   />
+                   <view class="cover-mask">
+                     <uni-icons type="image" size="24" color="#FFFFFF" />
+                     <text>更换封面</text>
+                   </view>
+                 </template>
+                 <template v-else>
+                   <view class="upload-placeholder">
+                     <uni-icons type="image" size="32" color="#CCCCCC" />
+                     <text>上传封面图</text>
+                     <text class="upload-tip"
+                       >建议尺寸 750x422，支持jpg、png格式</text
+                     >
+                   </view>
+                 </template>
+               </view>
+             </view>
+     
+             <view class="form-item">
+               <text class="form-label required">课程链接</text>
+               <view class="link-input-wrapper">
+                 <input
+                   class="form-input"
+                   v-model="courseForm.link"
+                   placeholder="请输入课程链接"
+                 />
+                 <view class="paste-btn cursor-pointer" @click="handlePasteLink">
+                   <uni-icons type="paperclip" size="16" color="#0A84FF" />
+                   <text>粘贴</text>
+                 </view>
+               </view>
+             </view>
+     
+             <view class="form-item">
+               <text class="form-label required">课程描述</text>
+               <textarea
+                 class="form-textarea"
+                 v-model="courseForm.description"
+                 placeholder="请输入课程描述，建议包含课程亮点、适合人群等信息"
+                 maxlength="500"
+               />
+               <text
+                 class="textarea-counter"
+                 :class="{'counter-warning': courseForm.description.length >= 450}"
+               >
+                 {{ courseForm.description.length }}/500
+               </text>
+             </view>
+           </scroll-view>
+     
+           <view class="popup-footer">
+             <button class="btn-cancel cursor-pointer" @click="closeAddCoursePopup">
+               取消
+             </button>
+             <button
+               class="btn-confirm cursor-pointer"
+               :disabled="!isFormValid"
+               @click="handleSubmit"
+             >
+               <text>确认添加</text>
+               <uni-icons
+                 v-if="isSubmitting"
+                 type="spinner-cycle"
+                 size="16"
+                 color="#FFFFFF"
+               />
+             </button>
+           </view>
+         </view>
+       </uni-popup>
     <!-- Reminders Panel -->
     <uni-popup ref="remindersPopup" type="bottom" @change="handlePopupChange">
       <view class="reminders-panel">
@@ -313,6 +367,9 @@ const activeTab = ref(0);
 const showFabMenu = ref(false);
 const showReminders = ref(false);
 const showGoals = ref(true);
+const quickAddPopup = ref();
+const isAnalyzing = ref(false);
+const quickAddLink = ref("");
 const addCoursePopup = ref();
 const isSubmitting = ref(false);
 const currentDate = computed(() => {
@@ -376,10 +433,6 @@ const courseForm = ref({
 });
 
 const isFormValid = computed(() => {
-	console.log(courseForm.value.name.trim() &&
-    courseForm.value.category &&
-    courseForm.value.link.trim() &&
-    courseForm.value.description.trim());
   return (
     courseForm.value.name.trim() &&
     courseForm.value.category &&
@@ -391,11 +444,30 @@ const isFormValid = computed(() => {
 const handleFabAction = (action: string) => {
   showFabMenu.value = false;
   if (action === "add") {
-    addCoursePopup.value.open();
+	  quickAddPopup.value.open()
   } else if (action === "import") {
-    uni.showToast({ title: "导入功能开发中", icon: "none" });
+        addCoursePopup.value.open();
   } else if (action === "reminder") {
     uni.showToast({ title: "提醒功能开发中", icon: "none" });
+  }
+};
+const closeQuickAddPopup = () => {
+  if (isAnalyzing.value) return;
+  quickAddLink.value = "";
+  quickAddPopup.value.close();
+};
+const handleQuickAdd=()=>{
+	
+}
+const handleQuickPaste = async () => {
+  try {
+    const text = await uni.getClipboardData();
+    if (text.data) {
+      quickAddLink.value = text.data;
+      uni.showToast({ title: "已粘贴", icon: "success" });
+    }
+  } catch (error) {
+    uni.showToast({ title: "粘贴失败", icon: "none" });
   }
 };
 
@@ -870,6 +942,44 @@ page {
   box-shadow: 0 6rpx 16rpx rgba(255, 59, 48, 0.4);
 }
 
+.quick-add-popup {
+  width: 650rpx;
+  background-color: #ffffff;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+.quick-add-tip {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 24rpx;
+  background-color: rgba(10, 132, 255, 0.1);
+  border-radius: 8rpx;
+  margin-bottom: 24rpx;
+}
+
+.quick-add-tip text {
+  font-size: 14px;
+  color: #0a84ff;
+}
+
+.analyzing-status {
+  position: absolute;
+  right: 24rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.analyzing-status text {
+  font-size: 14px;
+  color: #0a84ff;
+}
+
 .add-course-popup {
   width: 650rpx;
   background-color: #ffffff;
@@ -944,6 +1054,198 @@ page {
   background-color: #ffffff;
   box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.1);
 }
+
+.category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 24rpx;
+  background-color: #f5f5f5;
+  border-radius: 8rpx;
+  font-size: 14px;
+  color: #666666;
+  transition: all 0.3s;
+}
+
+.category-item:active {
+  opacity: 0.8;
+}
+
+.category-active {
+  background-color: #0a84ff;
+  color: #ffffff;
+}
+
+.upload-cover {
+  width: 100%;
+  height: 300rpx;
+  background-color: #f5f5f5;
+  border-radius: 12rpx;
+  overflow: hidden;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.upload-cover:active {
+  opacity: 0.8;
+}
+
+.upload-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.upload-placeholder text {
+  font-size: 14px;
+  color: #999999;
+}
+
+.upload-tip {
+  font-size: 12px !important;
+  color: #cccccc !important;
+}
+
+.cover-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16rpx;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.upload-cover:hover .cover-mask {
+  opacity: 1;
+}
+
+.cover-mask text {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.link-input-wrapper {
+  position: relative;
+}
+
+.paste-btn {
+  position: absolute;
+  right: 24rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 12rpx 20rpx;
+  border-radius: 28rpx;
+  background-color: rgba(10, 132, 255, 0.1);
+  transition: all 0.3s;
+}
+
+.paste-btn:active {
+  opacity: 0.8;
+}
+
+.paste-btn text {
+  font-size: 12px;
+  color: #0a84ff;
+}
+
+.form-textarea {
+  width: 100%;
+  height: 200rpx;
+  background-color: #f5f5f5;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  font-size: 14px;
+  color: #333333;
+  transition: all 0.3s;
+}
+
+.form-textarea:focus {
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.1);
+}
+
+.textarea-counter {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: #999999;
+  margin-top: 8rpx;
+}
+
+.counter-warning {
+  color: #ff3b30;
+}
+
+.popup-footer {
+  display: flex;
+  padding: 32rpx;
+  gap: 20rpx;
+  border-top: 1px solid #eeeeee;
+}
+
+.btn-cancel,
+.btn-confirm {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8rpx;
+  transition: all 0.3s;
+}
+
+.btn-cancel {
+  background-color: #f5f5f5;
+  color: #666666;
+}
+
+.btn-cancel:active {
+  background-color: #eeeeee;
+}
+
+.btn-confirm {
+  background: linear-gradient(135deg, #0a84ff, #0055d6);
+  color: #ffffff;
+}
+
+.btn-confirm:active {
+  opacity: 0.9;
+}
+
+.btn-confirm:disabled {
+  background: linear-gradient(135deg, #cccccc, #999999);
+  opacity: 0.8;
+}
+
 
 .category-list {
   display: flex;
