@@ -248,9 +248,9 @@
              <view class="form-item">
                <text class="form-label required">课程封面</text>
                <view class="upload-cover cursor-pointer" @click="handleUploadCover">
-                 <template v-if="courseForm.coverUrl">
+                 <template v-if="courseForm.avatar">
                    <image
-                     :src="courseForm.coverUrl"
+                     :src="courseForm.avatar"
                      mode="aspectFill"
                      class="cover-preview"
                    />
@@ -427,6 +427,7 @@ const toggleGoal = (index: number) => {
 const courseForm = ref({
   name: "",
   categoryId: 0,
+  category:"",
   avatar: "",
   link: "",
   description: "",
@@ -456,8 +457,38 @@ const closeQuickAddPopup = () => {
   quickAddLink.value = "";
   quickAddPopup.value.close();
 };
-const handleQuickAdd=()=>{
+const handleQuickAdd=async()=>{
+	if (!quickAddLink.value.trim()) {
+	    uni.showToast({ title: "请输入课程链接", icon: "none" });
+	    return;
+	  }
 	
+	  isAnalyzing.value = true;
+	
+	  try {
+	    // 模拟分析过程
+	    await new Promise((resolve) => setTimeout(resolve, 2000));
+	
+	    // 模拟分析结果
+	    const mockResult = {
+	      name: "2024全新Vue3+TypeScript开发教程",
+	      category: 1,
+	      avatar:
+	        "https://public.readdy.ai/ai/img_res/b303c353e27f9faaa5f47b84140484a6.jpg",
+	      link: quickAddLink.value,
+	      description:
+	        "本课程深入讲解Vue3和TypeScript的核心概念和实战应用，帮助学习者掌握现代前端开发技术栈，提升开发效率和代码质量。适合具有JavaScript基础的开发者学习。",
+	    };
+	
+	    Object.assign(courseForm.value, mockResult);
+	    quickAddPopup.value.close();
+	    addCoursePopup.value.open();
+	  } catch (error) {
+	    uni.showToast({ title: "分析失败，请重试", icon: "none" });
+	  } finally {
+	    isAnalyzing.value = false;
+	    quickAddLink.value = "";
+	  }
 }
 const handleQuickPaste = async () => {
   try {
